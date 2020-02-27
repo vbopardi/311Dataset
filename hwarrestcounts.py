@@ -35,6 +35,4 @@ def hwarrests(csv):
     datecounts['Number of Arrests'] = counts_elements #sets array for arrest counts per date to 'Number of Arrest' in datecounts
     return datecounts #Returns datecounts dataframe
     
-    
-
-hwarrests('arrestdata.csv') #Calls hwarrests functions on LA arrest dataset.
+  
