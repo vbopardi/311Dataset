@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 
 def convert(string):
-    """Converts from string to datetime
+    """Converts a string to a datetime object.
     """
     date = datetime.strptime(string,'%m/%d/%Y') #Accepts date string, converts it to datetime object. 
     return date
@@ -13,7 +13,7 @@ def convert(string):
 def hwarrests(csv):
     """
     Returns dataframe which displays the total number of arrests in Hollywood per 
-    day, every day since January 1st, 2017. CURRENTLY NOT THERE YET
+    day, every day from January 1st, 2017 to December 31, 2019.
     """
     
     df = pd.read_csv(csv) #Reads csv file and forms a new dataframe 
