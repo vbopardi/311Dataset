@@ -12,8 +12,10 @@ def convert(string):
 
 def hwarrests(csv):
     """
-    Returns dataframe which displays the total number of arrests in Hollywood per 
+    Accepts csv file and returns dataframe which displays the total number of arrests in Hollywood per 
     day, every day from January 1st, 2017 to December 31, 2019.
+    
+    Data: https://data.lacity.org/A-Safe-City/Arrest-Data-from-2010-to-Present/yru6-6re4
     """
     
     df = pd.read_csv(csv) #Reads csv file and forms a new dataframe 
