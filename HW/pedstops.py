@@ -14,6 +14,7 @@ def hwpedstops(csv):
     Reads csv file and returns dataframe which displays total number of
     pedestrian stops in Hollywood for every day between January 1st, 2017 and December 31, 2019.
     Code currently works, but it only reads data from 2017. 
+    Data: https://data.lacity.org/A-Safe-City/Vehicle-and-Pedestrian-Stop-Data-2010-to-Present/ci25-wgt7/data
     """
     
     df = pd.read_csv(csv)
