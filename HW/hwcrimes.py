@@ -12,7 +12,7 @@ def convert(string):
 def hwcrimes(csv):
     """ 
     Reads csv file and returns dataframe which displays total number of
-    crimes committed in Hollywood for every day between January 1st, 2017 and December 31, 2019. 
+    crimes committed in Hollywood per day for every day between January 1st, 2017 and December 31, 2019. 
     Data: https://data.lacity.org/A-Safe-City/Crime-Data-from-2010-to-2019/63jg-8b9z/data
     """
     
