@@ -13,6 +13,9 @@ def hwvehstops(csv):
     """ 
     Reads csv file and returns dataframe which displays total number of
     vehicle stops in Hollywood for every day between January 1st, 2017 and December 31, 2019. 
+    Data: https://data.lacity.org/A-Safe-City/Vehicle-and-Pedestrian-Stop-Data-2010-to-Present/ci25-wgt7/data
+    ##### Make sure to filter data to only include stops between 2017 and 2019, otherwise you won't be able to 
+    download the dataset properly!
     """
     
     df = pd.read_csv(csv)
