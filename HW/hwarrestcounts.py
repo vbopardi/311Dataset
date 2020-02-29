@@ -33,7 +33,7 @@ def hwarrests(csv):
     datecounts = pd.DataFrame(columns = ['Date', 'Number of Arrests']) #Creates empty dataframe with dates and number of arrests as columns
     dateray = np.array(hdf['Converted Dates'])  #Creates array of arrest dates in hdf
     
-    unique_elements, counts_elements = np.unique(dateray, return_counts=True) #Returns two arrays with (1) unique dates and (2) number of arrests for those dates
+    unique_elements, counts_elements = np.unique(dateray, return_counts = True) #Returns two arrays with (1) unique dates and (2) number of arrests for those dates
     
     datecounts['Date'] = unique_elements #Sets array for unique dates to 'Date' in datecounts
     datecounts['Number of Arrests'] = counts_elements #sets array for arrest counts per date to 'Number of Arrest' in datecounts
