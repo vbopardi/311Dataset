@@ -12,8 +12,7 @@ def convert(string):
 def hwvehstops(csv):
     """ 
     Reads csv file and returns dataframe which displays total number of
-    vehicle stops in Hollywood for every day between January 1st, 2017 and December 31, 2019.
-    Code currently only reads data from 2017. 
+    vehicle stops in Hollywood for every day between January 1st, 2017 and December 31, 2019. 
     """
     
     df = pd.read_csv(csv)
