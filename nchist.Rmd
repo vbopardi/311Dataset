@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+df <- read.csv('update.csv')
+```
+
+```{r}
+ncregions = unique(df[["NCName"]])
+```
+
+```{r}
+ncregions
+```
+
+
+```{r}
+
+
+
+for (region in ncregions)
+{
+  dfregion = subset(df[df$ElapsedDays >= 0,], NCName == region)
+  hist(dfregion$ElapsedDays, 
+       main = region)
+}
+```
+
+
+```{r}
+df[df$ElapsedDays >= 0,]
+
+```
+
