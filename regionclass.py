@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-class Region(object):
+class RegionPipeline(object):
     """
     Class for creating csv file datasets for 
     each region in LA. 
@@ -24,8 +24,35 @@ class Region(object):
         Converts date and time string to datetime object. 
         """
         date = datetime.strptime(string[:10],'%m/%d/%Y')   
+        
         return date
-   
+    
+    def filterdates(self, df):
+        """
+        Helper function for filtering dates to only include dates
+        between 2017 and 2019. 
+        """
+        
+        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
+        end_date = datetime.strptime('12/31/2019','%m/%d/%Y')  
+        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)]
+
+        return df
+
+    def resetidx(self, s):
+        """
+        Helper function for reindexing data frame to 
+        include dates where relevant count is 0. 
+        """
+        
+        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
+        end_date = datetime.strptime('12/31/2019','%m/%d/%Y')
+
+        idx = pd.date_range(start_date, end_date)
+        s = s.reindex(idx, fill_value = 0)
+
+        return s
+
     def regarrests(self, csv, regionid):
         """
         Returns dataframe which displays the total number of arrests in inputted region  
@@ -36,30 +63,20 @@ class Region(object):
         #Read csv file and create dataframe
         df = pd.read_csv(csv)  
         
-        #Filter dataframe to only include arrests from region inputted into function, and convert dates of arrests to datetime objects using convert function. 
+        #Filter dataframe by region. 
         df = df[df['Area ID'] == regionid] 
+        
+        #Use helper function to filter dates
         df['Converted Dates'] = df['Arrest Date'].apply(self.convert, 0)
-        
-        #Filter dataframe to only include dates between 1/1/2017 and 12/31/2019
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y')      
-        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)]  
+        df = self.filterdates(df) 
 
-        #Creates dataframe with dates and arrest counts per date 
-        datecounts = pd.DataFrame(columns = ['Date', 'Arrests'])   
+        #Creates dataframe with dates and arrest counts per date    
         unique_elements, counts_elements = np.unique(df['Converted Dates'], return_counts = True) 
-        datecounts['Date'] = unique_elements 
-        datecounts['Arrests'] = counts_elements  
+        s = pd.Series(counts_elements)
+        s.index = unique_elements
+        datecounts = pd.DataFrame({'Date': self.resetidx(s).index, 'Arrests': self.resetidx(s).values})
         
-        #Checks for dates which are not present in the dataframe and assigns arrest count to 0. 
-        idx = pd.date_range(start_date, end_date) 
-        s = pd.Series(datecounts['Arrests'])
-        s.index = datecounts['Date']
-        s = s.reindex(idx, fill_value = 0) 
-        datecounts = pd.DataFrame({'Date':s.index, 'Arrests':s.values})
-        
-        #Returns dataframe sorted by chronological order
-        return datecounts.sort_values(by = 'Date') 
+        return datecounts
     
     def regvehstops(self, csv, region):
         """ 
@@ -70,28 +87,19 @@ class Region(object):
         #Read csv file and create dataframe filtered by region
         df = pd.read_csv(csv)
         df = df[(df['Division Description 1'] == region) & (df['Stop Type'] == 'VEH')] 
-        df['Converted Dates'] = df['Stop Date'].apply(self.convert, 0)
 
-        #Filters dataframe to only include dates between start and end dates
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y') 
-        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)] 
+        #Use helper function to filter dates
+        df['Converted Dates'] = df['Stop Date'].apply(self.convert, 0)
+        df = self.filterdates(df)  
         
         #Creates dataframe with dates and vehicle stop counts per date 
-        datecounts = pd.DataFrame(columns = ['Date', 'Number of Vehicle Stops'])
-        unique_elements, counts_elements = np.unique(df['Converted Dates'], return_counts = True)
-        datecounts['Date'] = unique_elements
-        datecounts['Number of Vehicle Stops'] = counts_elements
-        
-        #Checks for dates which are not present in the dataframe and assigns corresponding count to 0. 
-        idx = pd.date_range(start_date, end_date) 
-        s = pd.Series(datecounts['Number of Vehicle Stops'])
-        s.index = datecounts['Date']
-        s = s.reindex(idx, fill_value = 0) 
-        datecounts = pd.DataFrame({'Date':s.index, 'Number of Vehicle Stops':s.values})
+        unique_elements, count_elements = np.unique(df['Converted Dates'], return_counts = True)
+        s = pd.Series(count_elements)
+        s.index = unique_elements
+        datecounts = pd.DataFrame({'Date':self.resetidx(s).index, 'Number of Vehicle Stops':self.resetidx(s).values})
         
         return datecounts
-
+    
     def regpedstops(self, csv, region):
         """ 
         Reads csv file and returns dataframe which displays total number of
@@ -100,40 +108,29 @@ class Region(object):
 
         #Read csv file and create dataframe filtered by region
         df = pd.read_csv(csv)
-        df = df[(df['Division Description 1'] == region) & (df['Stop Type'] == 'PED')] #Filters dataframe to only include Hollywood pedestrian stops. 
-        df['Converted Dates'] = df['Stop Date'].apply(self.convert, 0)
+        df = df[(df['Division Description 1'] == region) & (df['Stop Type'] == 'PED')] 
         
-        #Filters dataframe to only include dates between start and end dates
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y')  
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y') 
-        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)]  
+        #Use helper function to filter dates
+        df['Converted Dates'] = df['Stop Date'].apply(self.convert, 0)
+        df = self.filterdates(df)   
 
         #Creates dataframe with dates and pedestrian stop counts per date 
-        datecounts = pd.DataFrame(columns = ['Date', 'Number of Pedestrian Stops'])
-        unique_elements, counts_elements = np.unique(df['Converted Dates'], return_counts = True)
-        datecounts['Date'] = unique_elements
-        datecounts['Number of Pedestrian Stops'] = counts_elements
-    
-        #Checks for dates which are not present in the dataframe and assigns corresponding count to 0. 
-        idx = pd.date_range(start_date, end_date) 
-        s = pd.Series(datecounts['Number of Pedestrian Stops'])
-        s.index = datecounts['Date']
-        s = s.reindex(idx, fill_value = 0) 
-        datecounts = pd.DataFrame({'Date':s.index, 'Number of Pedestrian Stops':s.values})
+        unique_elements, count_elements = np.unique(df['Converted Dates'], return_counts = True)
+        s = pd.Series(count_elements)
+        s.index = unique_elements 
+        datecounts = pd.DataFrame({'Date':self.resetidx(s).index, 'Number of Pedestrian Stops':self.resetidx(s).values})
         
         return datecounts
-    
+
     def combinevp(self, csv, region):
         """
         Creates combined dataframe for vehicle and pedestrian counts
         in specified region.
         Data: https://data.lacity.org/A-Safe-City/Vehicle-and-Pedestrian-Stop-Data-2010-to-Present/ci25-wgt7/data
         """
-        #Create dataframes with for vehicle stop counts and pedestrian stop counts
+
         peddf = self.regpedstops(csv, region) 
         vehdf = self.regvehstops(csv, region)
-
-        #Adds vehicle stop counts to pedestrian stop counts dataframe and returns that dataframe
         peddf['Number of Vehicle Stops'] = vehdf['Number of Vehicle Stops'] 
         
         return peddf 
@@ -145,43 +142,35 @@ class Region(object):
         Data: https://data.lacity.org/A-Safe-City/Crime-Data-from-2010-to-2019/63jg-8b9z/data
         """
         
-        #Read csv file and create dataframe filtered by specified region (Use self.convertcrime!)
+        #Read csv file and create dataframe filtered by specified region
         df = pd.read_csv(csv)
         df = df[df['AREA '] == regionid]  
+        
+        #Use helper function to filter dates
         df['Converted Dates'] = df['DATE OCC'].apply(self.convert, 0)
+        df = self.filterdates(df)   
         
-        #Filters dataframe to only include dates between start and end dates
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y') 
-        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)]  
-        
-        #Creates dataframe with dates and pedestrian stop counts per date 
-        datecounts = pd.DataFrame(columns = ['Date', 'Number of Crimes Committed'])
-        unique_elements, counts_elements = np.unique(df['Converted Dates'], return_counts = True)
-        datecounts['Date'] = unique_elements
-        datecounts['Number of Crimes Committed'] = counts_elements
-        
-        #Checks for dates which are not present in the dataframe and assigns corresponding count to 0. 
-        idx = pd.date_range(start_date, end_date) 
-        s = pd.Series(datecounts['Number of Crimes Committed'])
-        s.index = datecounts['Date']
-        s = s.reindex(idx, fill_value=0) 
-        datecounts = pd.DataFrame({'Date':s.index, 'Number of Crimes Committed':s.values})
+        #Creates dataframe with dates and crimes counts per date 
+        unique_elements, count_elements = np.unique(df['Converted Dates'], return_counts = True)
+        s = pd.Series(count_elements)
+        s.index = unique_elements 
+        datecounts = pd.DataFrame({'Date':self.resetidx(s).index, 'Number of Crimes Committed':self.resetidx(s).values})
         
         return datecounts
-    
+
     def ctypeshelper(self, date, df, types):
         """ 
-        Helper function for ctypes. Creates array displaying the 
+        Helper function for ctypes. Returns dictionary displaying the 
         number of times each of the 141 crimes were committed on 
         the specified date
         """
 
         t = df[df['Converted Dates'] == date]['Crm Cd Desc']
-        unique_elements, counts_elements = np.unique(t, return_counts = True)
-        s = pd.Series(counts_elements)
+        unique_elements, count_elements = np.unique(t, return_counts = True)
+        s = pd.Series(count_elements)
         s.index = unique_elements
         s = s.reindex(types, fill_value = 0)
+        
         return s.to_dict()
 
     def crimetypes(self, csv, regionid):
@@ -198,13 +187,9 @@ class Region(object):
         #Create array of 141 unique crime types to use in helper function
         types = (np.unique(df['Crm Cd Desc']))
         
-        #Adds Converted Dates column to dataframe
+        #Use helper function to filter dates 
         df['Converted Dates'] = df['DATE OCC'].apply(self.convert, 0)
-        
-        #Filters dataframe to only include dates between 2017 and 2019
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y') 
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y') 
-        df = df[(df['Converted Dates'] >= start_date) & (df['Converted Dates'] <= end_date)]
+        df = self.filterdates(df)  
         
         #Creates series with dates between 2017 and 2019 as index
         s = pd.Series(np.unique(df['Converted Dates']))
@@ -241,21 +226,11 @@ class Region(object):
         df = df[df['PolicePrecinct'] == region] 
         df['Converted Dates'] = df['CreatedDate'].apply(self.convert, 0) 
 
-        #Creates dataframe with dates and service request counts per date 
-        datecounts = pd.DataFrame(columns = ['Date', 'Service Requests'])
-        unique_elements, counts_elements = np.unique(df['Converted Dates'], return_counts = True)
-        datecounts['Date'] = unique_elements
-        datecounts['Service Requests'] = counts_elements
-    
-        #Checks for dates which are not present in the dataframe and assigns corresponding count to 0. 
-        start_date = datetime.strptime('1/1/2017','%m/%d/%Y')  
-        end_date = datetime.strptime('12/31/2019','%m/%d/%Y') 
-        
-        idx = pd.date_range(start_date, end_date) 
-        s = pd.Series(datecounts['Service Requests'])
-        s.index = datecounts['Date']
-        s = s.reindex(idx, fill_value = 0) 
-        datecounts = pd.DataFrame({'Date':s.index, 'Service Requests':s.values})
+        #Creates dataframe with dates and number of service request per date  
+        unique_elements, count_elements = np.unique(df['Converted Dates'], return_counts = True)
+        s = pd.Series(count_elements)
+        s.index = unique_elements    
+        datecounts = pd.DataFrame({'Date':self.resetidx(s).index, 'Service Requests':self.resetidx(s).values})
         
         return datecounts
     
@@ -271,7 +246,7 @@ class Region(object):
         s = s.reindex(cols, fill_value = 0)
         
         return s.values
-       
+        
     def srtypes(self, df, region):
         """
         Returns dataframe which displays number of times each of the 
@@ -285,7 +260,11 @@ class Region(object):
         #Create empty datecounts dataframe
         dates = np.unique(df['Converted Dates'])
         cols = np.unique(df['RequestType'])
-        datecounts = pd.DataFrame(pd.np.empty((1095, 12))).set_index(dates)
+
+        numdate = 1095 #Number of dates between 2017 and 2019
+        src = 12 #number of service request categories
+
+        datecounts = pd.DataFrame(pd.np.empty((numdate, src))).set_index(dates)
         datecounts.columns = cols
         
         #Filters dataframe by region
@@ -318,12 +297,11 @@ class Region(object):
         finaldf['Service Requests'] = self.sr['Service Requests']
         finaldf = pd.concat([finaldf.reset_index(drop=True),self.srt.reset_index(drop = True)], axis=1)
 
-        return finaldf
+        return finaldf.to_csv(region + '.csv', index = False)
 
 
-REG = Region()
-REG.create(arrestcsv, vehpedcsv, crimecsv, csv2017, csv2018, csv2019, regionid, region).to_csv('insert name for csv here', index = False)
-
+REG = RegionPipeline()
+REG.create(arrestcsv, vehpedcsv, crimecsv, csv2017, csv2018, csv2019, regionid, region).to_csv(region + '.csv', index = False)
 
 #Regionid and Regions
 """
@@ -349,5 +327,3 @@ REG.create(arrestcsv, vehpedcsv, crimecsv, csv2017, csv2018, csv2019, regionid, 
 20, 'OLYMPIC'
 21, 'TOPANGA'
 """
-
- 
