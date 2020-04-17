@@ -301,8 +301,7 @@ class RegionPipeline(object):
 
 
 REG = RegionPipeline()
-REG.create(arrestcsv, vehpedcsv, crimecsv, csv2017, csv2018, csv2019, regionid, region).to_csv(region + '.csv', index = False)
-
+REG.create(arrestcsv, vehpedcsv, crimecsv, csv2017, csv2018, csv2019, regionid, region)
 #Regionid and Regions
 """
 1, 'CENTRAL'  
