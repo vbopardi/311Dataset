@@ -1,4 +1,4 @@
-# LA #311 Dataset
+# LA #311 Region Pipeline
 
 [P-ai's](https://www.p-ai.org/) #311 team is working with [Hack For LA](https://www.hackforla.org/#hack-nights) on performing 
 data analysis and machine learning on data from the city of Los Angeles. The goal of this project is to build a data pipeline which, for
